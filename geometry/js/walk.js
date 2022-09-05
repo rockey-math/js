@@ -6,7 +6,7 @@
 // by enki.
 
 //First load our data and pass it to a PGA algebra.
-fetch("jimmy_anim.json").then(x=>x.json()).then(Algebra(3,0,1).inline((obj)=>{
+fetch("../rsc/jimmy_anim.json").then(x=>x.json()).then(Algebra(3,0,1).inline((obj)=>{
  
   // our json contains both mesh and animation data.
   // obj = { vertices:[x,y,z,x,y,z,....], triangleIndices:[0,1,2,...], 
