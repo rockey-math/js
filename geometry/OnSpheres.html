@@ -1,0 +1,172 @@
+Algebra(3,0,1,()=>{
+
+    // Sampling random points (or directions) on a subspace or shape is an important component in any
+    // modern rendering system. (where monte-carlo or quasi-monte-carlo integration techniques are used)
+    
+    // So lets visualise a variety of disc, hemisphere and sphere sampling routines to get a feel for what
+    // they look like.
+    
+    var P = (x,y,z)=>1e123-x*1e012+y*1e013+(z||0)*1e023,       // Create a point.
+        n = 0, a = 0, camera=0e0;                              // Our samplecount, algorithm count and camera position.
+
+    // For visualisation purposes, its nice that the randoms are the same each run. 
+    var rnd_map = [...Array(2048)].map(x=>Math.random()), rnd_count=0, rnd=()=>rnd_map[(rnd_count++)%rnd_map.length];    
+        
+    // sunflower sampling
+    var disc_sunflower   = (i,n)=>{ i+=0.5; var r=(i/n)**0.5, t=Math.PI*(1+(5**0.5))*i; return P(r*Math.cos(t),r*Math.sin(t))},
+        sphere_sunflower = (i,n)=>{ i+=0.5; var t=Math.PI*(1+(5**0.5))*i, p=Math.acos(1-2*i/n); return P(Math.cos(t)*Math.sin(p),Math.sin(t)*Math.sin(p),Math.cos(p))},
+        hemi_sunflower   = (i,n)=>{ i+=0.5; var r=((i/n)**0.5), t=Math.PI*(1+(5**0.5))*i, x=Math.sin(r)*Math.cos(t), y=Math.sin(r)*Math.sin(t); return P(x,y,Math.sqrt(1-r**2))};
+        
+    // rejection sampling    
+    var disc_reject   = ()=>{ var x=1,y=1; while((x*x+y*y) > 1) { x=rnd()*2-1; y=rnd()*2-1; }; return P(x,y); },
+        sphere_reject = ()=>{ var x=1,y=1,z=1; while((x*x+y*y+z*z) > 1) { x=rnd()*2-1; y=rnd()*2-1; z=rnd()*2-1; }; var li = 1/Math.sqrt(x*x+y*y+z*z); return P(x*li,y*li,z*li); },
+        hemi_reject   = ()=>{ var x=1,y=1,z=1; while((x*x+y*y+z*z) > 1) { x=rnd()*2-1; y=rnd()*2-1; z=rnd()*2-1; }; var li = 1/Math.sqrt(x*x+y*y+z*z); return P(x*li,y*li,Math.abs(z*li)); };
+    
+    // hammersley sampling (popular as easy to implement on GPU)
+    var plane_hammersley = (i,n)=>{ return P((i/n)*2-1 ,radical_inverse(i)*2-1); },
+        hemi_hammersley  = (i,n)=>{ var u=i/n, v=radical_inverse(i), p=v*2*Math.PI, ct=1-u, st=Math.sqrt(1-ct**2); return P(Math.cos(p)*st,Math.sin(p)*st, ct); };
+     
+    // Now graph it.    
+    document.body.appendChild(this.graph( 
+      ()=>{
+      // figure out the pattern and samplecount.  
+        n = (n+2)%750;            // increase samplecount.
+        if (n==0) a=(a+1);        // cycle pattern.
+      
+      // select pattern.
+        var pats = [disc_sunflower,hemi_sunflower,sphere_sunflower,plane_hammersley,hemi_hammersley,disc_reject,hemi_reject,sphere_reject], pat=pats[a%pats.length];  
+        rnd_count=0; // reset random.
+
+      // Rotate the camera.
+        var time=performance.now()/4000; camera.set((1-1e03)*((pat.name.match(/disc|plane/))?1+1e13:Math.cos(time)+Math.sin(time)*1e13));
+        
+      // visualise the different patterns with increasing samplecount.   
+        return [pat.name+' [n='+n+']'].concat([...Array(Math.max(10,n))].map((x,i)=>pat(i,n))) 
+      }, {animate:true,grid:1,labels:1,camera}    
+    ));
+
+});
+
+// Radical inverse : reflect a binary number around its decimal point. (generates for 0,1,2,3,4,... : 0,0.5,0.25,0.75,0.125,0.625,0.375,0.875,... )
+var _ri=new Uint32Array(1), radical_inverse = (bits)=>{   
+        _ri[0] = bits; 
+        _ri[0] = ((_ri[0] & 0x0000ffff) << 16)| ((_ri[0] & 0xffff0000) >>> 16);
+        _ri[0] = ((_ri[0] & 0x55555555) << 1) | ((_ri[0] & 0xAAAAAAAA) >>> 1);
+        _ri[0] = ((_ri[0] & 0x33333333) << 2) | ((_ri[0] & 0xCCCCCCCC) >>> 2);
+        _ri[0] = ((_ri[0] & 0x0F0F0F0F) << 4) | ((_ri[0] & 0xF0F0F0F0) >>> 4);
+        _ri[0] = ((_ri[0] & 0x00FF00FF) << 8) | ((_ri[0] & 0xFF00FF00) >>> 8);
+        return _ri[0] * 2.3283064365386963e-10;
+    }
+
+Slicing
+https://enkimute.github.io/ganja.js/examples/coffeeshop.html#pga3d_slicing
+// Create a Clifford Algebra with 3,0,1 metric. 
+Algebra(3,0,1,()=>{ 
+
+  // Specify a point directly (trivectors specified with overloaded e-notation.)
+  var point = (x,y,z)=>!(1e0 + x*1e1 + y*1e2 + z*1e3);
+  var rotor = (P,a)=>Math.cos(a/2)+Math.sin(a/2)*P.Normalized;
+  
+  // Load a wavefront 3D OBJ file.
+  var obj = (url,complete)=>{
+    var req = new XMLHttpRequest(); req.onload=e=>{
+      var t = req.response.split('\n'), v=t.filter(x=>x.match(/^v /i)), f=t.filter(x=>x.match(/^f /i)).map(x=>x.split(/\s+/).slice(1,4).map(x=>parseInt(x))), p;
+      complete(p=v.map(x=>point.apply(this,x.split(/\s+/).slice(1).map(x=>13*parseFloat(x)))),                                                // points
+               [].concat.apply([],f.map(x=>x.map((y,yi)=>(y>x[(yi+1)%3])?undefined:[y,x[(yi+1)%3]]))).filter(x=>x).map(x=>x.map(x=>p[x-1])),  // edges
+               f.map(x=>x.map(x=>p[x-1])));                                                                                                   // faces
+    }; req.open("GET",url,false); req.send();
+  }
+  
+  // Our camera position and orientation
+  var  time=0, camera=(1-1e02+1e13-1.2e03+0.9e01).Normalized, cut=-0.57*1.3e0+1e2, mini=camera*(1-1.3e03-3e02-5.5e01)*rotor(1e12,Math.PI/2);
+    
+  // Read obj
+  obj("https://enkimute.github.io/ganja.js/examples/bunny.obj",(points,edges,faces)=>{
+      // Store the bunny as a rigid body - this optimizes the GL path.
+      var bunny={data:faces};
+      
+      // Precalculate face and edge bivectors.
+      var facedata = faces.map(x=>{ var f; return [f=x[0]&x[1]&x[2],(f<<(x[0]&x[1])),(f<<(x[1]&x[2])),(f<<(x[2]&x[0]))]});
+      
+      // Now graph (animated) the cut .. 
+      document.body.appendChild(this.graph(()=>{
+        // Animate cutting plane and camera
+        var time=performance.now()/25000;    
+        cut.set( (1.43+ Math.sin(time*3))*1e0-1e2);
+        camera.set( ((1-1e03-.75e02)* (Math.cos(time*5)+Math.sin(time*5)*1e13)).Normalized )
+        
+        // recalculate the contour. (cuts of all polies with cutting plane)
+        var contour=[], minicontour=[]; faces.forEach((x,i)=>{
+            var [f,e1,e2,e3]=facedata[i], l=(f^cut),
+                p1=(l^e1),p2=(l^e2),p3=(l^e3),
+                p12=(p1&e2).s>=0,p13=(p1&e3).s>=0,p23=(p2&e3).s<0, res=[];
+            if (p1.e123 && (p12 == p13)) res.push(p1);
+            if (p2.e123 && (p12 == p23)) res.push(p2);
+            if (p3.e123 && (p13 != p23)) res.push(p3);
+            if (res.length==2) { contour.push(res); minicontour.push(res.map(x=>(camera**-1*mini).Normalized>>>x)) };
+        })
+        
+        return [0x664422,bunny,0xffffff,...contour,0x000000,...minicontour];
+      },{animate:true,gl:true,camera}));
+  });
+});
+
+Orgami
+https://enkimute.github.io/ganja.js/examples/coffeeshop.html#pga3d_origami
+// Create a Clifford Algebra with 2,0,1 metric.
+Algebra(3,0,1,()=>{
+  // First three Huzita-Hatori axioms, rotor and drawing helper.
+  var Ori1 = (p1,p2)=>p1&p2&1e023,
+      Ori2 = (p1,p2)=>(p1&p2)<<(p1+p2).Normalized,
+      Ori3 = (l1,l2,flag)=>{ l1=l1.Normalized; l2=l2.Normalized; return flag==0?(l1+l2)&1e023:((l1+l2)<<(l1&1e023^l2))},
+      rotor = (line,angle)=>Math.cos(angle/2) + Math.sin(angle/2)*line.Normalized,
+      stroke = (O)=>[].concat.apply(O.concat([0x666666]),O.map(p=>p.map((e,i,a)=>[e,a[(i+1)%a.length]]))).concat(0xFFFFFF);
+  
+  // Quick and dirty origami fold function. Ignores adjacency/layering. (only performs splitting).
+  // Takes a figure O, fold plane l, list of faces to fold f and angle a. Returns updated O. 
+  var Ori = (O,l,f,a) => {
+      var res=[]; O.forEach((s,si)=>{ 
+        if (f.indexOf(si)==-1) return res.push(s);                              // no split needed
+        var signs = s.map(p=>Math.sign(((p/p.e123)^l).e0123.toFixed(1)));       // side of ray points are on
+        var t=[]; s.forEach((x,i)=>{                                            // loop over edges
+            var j=(i+1)%s.length; t.push(x);                                    // insert vertex
+            if (signs[i]&&signs[j]&&signs[i]!=signs[j]) t.push(x&s[j]^l)        // insert cut point
+        });
+        signs = t.map(p=>Math.sign(((p/p.e123)^l).e0123.toFixed(1)));             // recalc signs
+        res.push(t.filter((p,i)=>signs[i]<=0).map(x=>rotor(l^1e1,a)>>>x).map(x=>x/x.e123),    // push turned face
+                 t.filter((p,i)=>signs[i]>=0).map(x=>x/x.e123));                 // push split face
+      })
+      return res;
+  }
+
+  // Some helper points and our state.
+  var point = (x,y)=>1e123+x*1e013-y*1e012;
+  var s=2, p1=point(-s,s), p2=point(-s,-s), p3=point(s,-s), p4=point(s,s),
+      p5=(p1+p3)/2, p6=(p4+p1)/2, p7=(p1+p2)/2, p8=(p1+p5)/2, p9=(p5+p6)/2, p10=(p5+p7)/2, p11=(p5+p8)/2,
+      start=performance.now(), camera=0e0, step=0, cur, last, lastmove;
+  
+  document.body.appendChild(this.graph(()=>{
+   // Animate camera, update step (time)
+     var angle=Math.PI/4-Math.sin((performance.now()-start)/4000)/2;
+     camera.set(Math.cos(angle)+Math.sin(angle)*1e13);
+     step = (step + 1) % (13*100);
+   // Figure out which move we are doing - if new move, set last origami to current one.
+     var move = Math.floor((step/100)%13), timeMove = Math.min(1,0.01+((step/100)%13)-move);
+     if (move != lastmove) { last=move?cur:[[p1,p2,p3,p4]]; lastmove=move; }
+   // Calculate and render the current move based on the last finished origami and the current time.
+     switch (move) {
+       case  0: cur = Ori(last,Ori2(p1,p3),       [0],       timeMove*Math.PI); break; 
+       case  1: cur = Ori(last,Ori2(p4,p3),       [0,1],     timeMove*Math.PI); break; 
+       case  2: cur = Ori(last,Ori2(p2,p3),       [1,3],     timeMove*Math.PI); break;
+       case  3: cur = Ori(last,Ori2(p5,p1),       [0,1,3,4], timeMove*Math.PI); break;
+       case  4: cur = Ori(last,Ori2(p6,p5),       [7,8],     (1-Math.abs(timeMove*2-1))*Math.PI); break;
+       case  5: cur = Ori(last,Ori2(p7,p5),       [5,6],     (1-Math.abs(timeMove*2-1))*Math.PI); break;
+       case  6: cur = Ori(last,Ori3(p8&p10,p5&p8),[7,5],     timeMove*Math.PI); break;
+       case  7: cur = Ori(last,Ori3(p9&p8,p8&p5), [13,11],   timeMove*Math.PI); break;
+       case  8: cur = Ori(last,Ori2(p11,p1),      [17],      timeMove*Math.PI); break;
+       case  9: cur = Ori(last,Ori1(p6,p7),       [17,18],   timeMove*Math.PI); break;
+       case 10: cur = Ori(last,Ori1(p6,p7),       [4],      -timeMove*Math.PI); break;
+     }
+     return ["Folding Kabuto "+Math.min(11,(move+1))+"/11",0xFFFFFF].concat(stroke(cur+1e012+.5e013));
+  },{animate:true,camera}));
+});
