@@ -25,7 +25,7 @@
 
   // our physics state. 
   var State  = [ 1,                   // The starting position and orientation in space. (identity) 
-                 0.35e13-.27e12],     // The starting linear and rotational velocity in body.
+                 0.12e13-.17e12],     // The starting linear and rotational velocity in body.
       dState = ([g,v])=>[             // given g, the current pos/rot in space, and v the velocity in the body,
                  g*v,                 // Convert velocity from body to space. (will update space pos/rot)
                  !(!v*v-v*!v)         // momentum and velocity are dual, commutator gives derivative.
