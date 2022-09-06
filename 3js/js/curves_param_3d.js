@@ -26,9 +26,9 @@ var tMin = -2.11, tMax = 2.11, tRange = tMax - tMin;
 //var yFuncText = "t^4 - 4*t^2";
 //var zFuncText = "(t^5 - 10*t)/5";
 
-var xFuncText = "sin(t)+2sin(2t)";
-var yFuncText = "cos(t)-2cos(2t)";
-var zFuncText = "-sin(3t)";
+var xFuncText = "sin(t)+2*sin(2*t)";
+var yFuncText = "cos(t)-2*cos(2*t)";
+var zFuncText = "-sin(3*t)";
 
 var xFunc = Parser.parse(xFuncText).toJSFunction( ['t'] );
 var yFunc = Parser.parse(yFuncText).toJSFunction( ['t'] );
@@ -243,9 +243,9 @@ function preset01()
 	// gui_yText.setValue("t^4 + b*t^2");
 	// gui_zText.setValue("(1/10)*(t^5 + (-10)*t)");
 		
-	gui_xText.setValue("sin(t)+2sin(2t)");
-	gui_yText.setValue("cos(t)-2cos(2t)");
-	gui_zText.setValue("-sin(3t)");
+	gui_xText.setValue("sin(t)+2*sin(2*t)");
+	gui_yText.setValue("cos(t)-2*cos(2*t)");
+	gui_zText.setValue("-sin(3*t)");
 	
 	gui_tMin.setValue(-2.1); gui_tMax.setValue(2.1); 
 	gui_a.setValue(-3);
