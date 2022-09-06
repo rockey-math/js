@@ -101,7 +101,7 @@ function init()
 	scene.add(floor);
 	
 	// "wireframe texture" (from image)
-	var wireTexture = new THREE.ImageUtils.loadTexture( 'images/square.png' );
+	var wireTexture = new THREE.ImageUtils.loadTexture( 'images/square1.png' );
 	wireTexture.wrapS = wireTexture.wrapT = THREE.RepeatWrapping; 
 	wireTexture.repeat.set( 40, 40 );
 	wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide } );
