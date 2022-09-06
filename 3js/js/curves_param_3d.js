@@ -1,4 +1,3 @@
-<script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
@@ -289,8 +288,3 @@ function render()
 {
 	renderer.render( scene, camera );
 }
-
-</script>
-
-</body>
-</html>
