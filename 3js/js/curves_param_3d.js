@@ -22,9 +22,14 @@ var tubeRadius = 0.1;
 
 var tMin = -2.11, tMax = 2.11, tRange = tMax - tMin;
 
-var xFuncText = "t^3 - 3*t";
-var yFuncText = "t^4 - 4*t^2";
-var zFuncText = "(t^5 - 10*t)/5";
+//var xFuncText = "t^3 - 3*t";
+//var yFuncText = "t^4 - 4*t^2";
+//var zFuncText = "(t^5 - 10*t)/5";
+
+var xFuncText = "cos(t)";
+var yFuncText = "sin(t)";
+var zFuncText = "t";
+
 var xFunc = Parser.parse(xFuncText).toJSFunction( ['t'] );
 var yFunc = Parser.parse(yFuncText).toJSFunction( ['t'] );
 var zFunc = Parser.parse(zFuncText).toJSFunction( ['t'] );
