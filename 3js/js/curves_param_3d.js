@@ -237,9 +237,14 @@ function createGraph()
 function preset01()
 {
 	autoUpdate = false;
-	gui_xText.setValue("t^3 + a*t");
-	gui_yText.setValue("t^4 + b*t^2");
-	gui_zText.setValue("(1/10)*(t^5 + (-10)*t)");
+	// gui_xText.setValue("t^3 + a*t");
+	// gui_yText.setValue("t^4 + b*t^2");
+	// gui_zText.setValue("(1/10)*(t^5 + (-10)*t)");
+		
+	gui_xText.setValue("sin(t)");
+	gui_yText.setValue("cos(t)");
+	gui_zText.setValue("t");
+	
 	gui_tMin.setValue(-2.1); gui_tMax.setValue(2.1); 
 	gui_a.setValue(-3);
 	gui_b.setValue(-4);
