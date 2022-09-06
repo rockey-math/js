@@ -26,9 +26,9 @@ var tMin = -2.11, tMax = 2.11, tRange = tMax - tMin;
 //var yFuncText = "t^4 - 4*t^2";
 //var zFuncText = "(t^5 - 10*t)/5";
 
-var xFuncText = "cos(t)";
-var yFuncText = "sin(t)";
-var zFuncText = "t";
+var xFuncText = "sin(t)+2sin(2t)";
+var yFuncText = "cos(t)-2cos(2t)";
+var zFuncText = "-sin(3t)";
 
 var xFunc = Parser.parse(xFuncText).toJSFunction( ['t'] );
 var yFunc = Parser.parse(yFuncText).toJSFunction( ['t'] );
@@ -128,7 +128,9 @@ function init()
 		finalValue: 337
 	};
 
-	// GUI -- equation
+	// GUI -- equation  a trefoil knot
+	// https://tex.stackexchange.com/questions/587156/how-can-i-draw-the-trefoil-knot-in-3d-co-ordinates-in-latex-using-these-parametr
+	
 	gui_xText = gui.add( this, 'xFuncText' ).name('x = f(t) = ');
 	gui_yText = gui.add( this, 'yFuncText' ).name('y = g(t) = ');
 	gui_zText = gui.add( this, 'zFuncText' ).name('z = h(t) = ');
@@ -241,9 +243,9 @@ function preset01()
 	// gui_yText.setValue("t^4 + b*t^2");
 	// gui_zText.setValue("(1/10)*(t^5 + (-10)*t)");
 		
-	gui_xText.setValue("sin(t)");
-	gui_yText.setValue("cos(t)");
-	gui_zText.setValue("t");
+	gui_xText.setValue("sin(t)+2sin(2t)");
+	gui_yText.setValue("cos(t)-2cos(2t)");
+	gui_zText.setValue("-sin(3t)");
 	
 	gui_tMin.setValue(-2.1); gui_tMax.setValue(2.1); 
 	gui_a.setValue(-3);
