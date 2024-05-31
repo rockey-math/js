@@ -9,3 +9,5 @@ https://htmlpreview.github.io/?https://github.com/rockey-math/js/blob/main/geome
 https://htmlpreview.github.io/?https://github.com/rockey-math/js/blob/main/geometry/spinning.html
 
 https://htmlpreview.github.io/?https://github.com/rockey-math/js/blob/main/geometry/sphere.html
+
+https://htmlpreview.github.io/?https://github.com/rockey-math/js/blob/main/3js/curves_param_3d.html
